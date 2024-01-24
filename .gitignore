@@ -1,9 +1,12 @@
 ### Dotenv
 .env
 .env.json
+.env.toml
 
 ### Jetbrains
 .idea
 
 ### Terraform
 *.terraform
+terraform.tfstate
+variables.json
