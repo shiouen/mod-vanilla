@@ -2,8 +2,6 @@ use scripts
 
 scripts dotenv load-config "./config/.env.toml"
 
-const dns_path = "infra/dns"
-
 def deploy [approve: bool = false] {
     let config = scripts config get-config "./config/variables.toml" "./config/tags.toml"
 
@@ -18,7 +16,6 @@ def deploy [approve: bool = false] {
         "apply",
         "-var-file",
         "variables.json"
-
     ]
 
     if $approve {
