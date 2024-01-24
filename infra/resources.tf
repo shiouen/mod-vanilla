@@ -4,7 +4,8 @@ resource "aws_cloudwatch_log_group" "dns_query_log_group" {
   provider = aws.us-east-1
 }
 
-resource "aws_cloudwatch_log_resource_policy" "dns_query_log_group_policy" {
+resource "aws_cloudwatch_log_resource_policy" "dns_query_log_resource_policy" {
   policy_document = data.aws_iam_policy_document.dns_query_log_group_policy_document.json
-  policy_name = "hmm"
+  policy_name = "mod-${local.subdomain}-${formatdate("YYYYMMDDhhmmss", timestamp())}"
+  provider = aws.us-east-1
 }
