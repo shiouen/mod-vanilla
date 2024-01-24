@@ -19,7 +19,7 @@ def deploy [approve: bool = false] {
     ]
 
     if $approve {
-        options = "-auto-approve" | append $options
+        $options = $options | append "-auto-approve"
     }
 
     run-external terraform ...$options
