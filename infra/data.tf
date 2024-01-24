@@ -1,4 +1,4 @@
-data "aws_iam_policy_document" "dns_query_log_group_policy_document" {
+data "aws_iam_policy_document" "dns-query-log-group-policy-document" {
   statement {
     actions = [
       "logs:CreateLogStream",
@@ -6,7 +6,7 @@ data "aws_iam_policy_document" "dns_query_log_group_policy_document" {
     ]
 
     resources = [
-      "${aws_cloudwatch_log_group.dns_query_log_group.arn}/*"
+      "${aws_cloudwatch_log_group.query-log-group.arn}/*"
     ]
 
     principals {
