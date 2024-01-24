@@ -10,7 +10,7 @@ variable "domain_name" {
   type        = string
 }
 
-variable "subdomain" {
+variable "subdomain_part" {
   default     = "minecraft"
   description = "The subdomain part."
   type        = string
