@@ -56,6 +56,7 @@ resource "aws_lambda_function" "autoscaler-lambda" {
   runtime          = "python3.8"
   source_code_hash = data.archive_file.autoscaler-lambda.output_base64sha256
 
+  // TODO add REGION: config.serverRegion, CLUSTER: constants.CLUSTER_NAME, SERVICE: constants.SERVICE_NAME
   environment {
     variables = {
     }
