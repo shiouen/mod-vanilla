@@ -1,3 +1,3 @@
 output "test" {
-  value = formatdate("YYYYMMDDhhmmss", timestamp())
+  value = data.archive_file.autoscaler-lambda.output_path
 }

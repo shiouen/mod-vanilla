@@ -6,6 +6,10 @@
 ### Jetbrains
 .idea
 
+### Project
+*.zip
+dist
+
 ### Terraform
 *.terraform
 *tfstate*

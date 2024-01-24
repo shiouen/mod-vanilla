@@ -1,3 +1,22 @@
+data "archive_file" "autoscaler-lambda" {
+  output_path = "lambda/dist/autoscaler-payload.zip"
+  source_file = "lambda/autoscaler.py"
+  type        = "zip"
+}
+
+data "aws_iam_policy_document" "autoscaler-lambda-policy-document" {
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["lambda.amazonaws.com"]
+    }
+
+    actions = ["sts:AssumeRole"]
+  }
+}
+
 data "aws_iam_policy_document" "dns-query-log-group-policy-document" {
   statement {
     actions = [

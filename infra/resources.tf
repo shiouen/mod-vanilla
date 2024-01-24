@@ -10,6 +10,11 @@ resource "aws_cloudwatch_log_resource_policy" "query-log-resource-policy" {
   provider        = aws.us-east-1
 }
 
+resource "aws_iam_role" "autoscaler-lambda-role" {
+  name_prefix        = "mod-${local.subdomain}-"
+  assume_role_policy = data.aws_iam_policy_document.autoscaler-lambda-policy-document.json
+}
+
 resource "aws_route53_query_log" "query-log" {
   cloudwatch_log_group_arn = aws_cloudwatch_log_group.query-log-group.arn
   provider                 = aws.us-east-1
@@ -34,7 +39,7 @@ resource "aws_route53_record" "root-hosted-zone-ns-record" {
   records  = aws_route53_zone.hosted-zone.name_servers
   ttl      = 172800
   type     = "NS"
-  zone_id = data.aws_route53_zone.root-hosted-zone.zone_id
+  zone_id  = data.aws_route53_zone.root-hosted-zone.zone_id
 }
 
 resource "aws_route53_zone" "hosted-zone" {
@@ -42,7 +47,27 @@ resource "aws_route53_zone" "hosted-zone" {
   provider = aws.us-east-1
 }
 
+resource "aws_lambda_function" "autoscaler-lambda" {
+  filename         = data.archive_file.autoscaler-lambda.output_path
+  function_name    = random_id.autoscaler-lambda-name.dec
+  handler          = "autoscaler.handler"
+  provider         = aws.us-east-1
+  role             = aws_iam_role.autoscaler-lambda-role.arn
+  runtime          = "python3.8"
+  source_code_hash = data.archive_file.autoscaler-lambda.output_base64sha256
+
+  environment {
+    variables = {
+    }
+  }
+}
+
 resource "random_id" "query-log-resource-policy-name" {
   byte_length = 10
   prefix      = "mod-${local.subdomain}-"
+}
+
+resource "random_id" "autoscaler-lambda-name" {
+  byte_length = 10
+  prefix      = "mod-autoscaler-"
 }
