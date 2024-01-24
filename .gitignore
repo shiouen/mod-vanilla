@@ -1,5 +1,9 @@
 ### Dotenv
 .env
+.env.json
 
 ### Jetbrains
 .idea
+
+### Terraform
+*.terraform
