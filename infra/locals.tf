@@ -1,4 +1,6 @@
 locals {
+  ecs_volume_name = "data"
+
   efs_gid = 1000
   efs_uid = 1000
 

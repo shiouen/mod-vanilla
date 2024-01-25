@@ -29,14 +29,36 @@ resource "aws_ecs_cluster" "cluster" {
 
 resource "aws_ecs_cluster_capacity_providers" "cluster-capacity-provider" {
   capacity_providers = ["FARGATE"]
-  cluster_name = aws_ecs_cluster.cluster.name
+  cluster_name       = aws_ecs_cluster.cluster.name
 
   default_capacity_provider_strategy {
-    base = 1
+    base              = 1
     capacity_provider = "FARGATE"
-    weight = 100
+    weight            = 100
   }
 }
+
+resource "aws_ecs_task_definition" "task-definition" {
+  container_definitions = jsonencode([
+  ])
+
+  family = random_id.task-definition-family.dec
+
+  volume {
+    name = local.ecs_volume_name
+
+    efs_volume_configuration {
+      file_system_id     = aws_efs_file_system.file-system.id
+      transit_encryption = "ENABLED"
+
+      authorization_config {
+        access_point_id = aws_efs_access_point.file-system-access-point.id
+        iam             = "ENABLED"
+      }
+    }
+  }
+}
+
 
 resource "aws_efs_access_point" "file-system-access-point" {
   file_system_id = aws_efs_file_system.file-system.id
@@ -71,7 +93,7 @@ resource "aws_efs_file_system" "file-system" {
 
 resource "aws_iam_policy" "file-system-policy" {
   name_prefix = "mod-file-system-policy-"
-  policy = data.aws_iam_policy_document.file-system-policy-document.json
+  policy      = data.aws_iam_policy_document.file-system-policy-document.json
 }
 
 resource "aws_iam_role" "autoscaler-lambda-role" {
@@ -128,12 +150,12 @@ resource "aws_route53_query_log" "query-log" {
 // dummy record, to be changed whenever the container launches
 // which is why changes to the `records` property are ignored
 resource "aws_route53_record" "hosted-zone-a-record" {
-  name            = local.subdomain
-  provider        = aws.us-east-1
-  records         = ["192.168.1.1"]
-  ttl             = 30
-  type            = "A"
-  zone_id         = data.aws_route53_zone.root-hosted-zone.zone_id
+  name     = local.subdomain
+  provider = aws.us-east-1
+  records  = ["192.168.1.1"]
+  ttl      = 30
+  type     = "A"
+  zone_id  = data.aws_route53_zone.root-hosted-zone.zone_id
 
   lifecycle {
     ignore_changes = [
@@ -179,4 +201,9 @@ resource "random_id" "query-log-resource-policy-name" {
 resource "random_id" "query-log-subscription-filter-name" {
   byte_length = 10
   prefix      = "mod-${local.subdomain}-"
+}
+
+resource "random_id" "task-definition-family" {
+  byte_length = 10
+  prefix      = "mod-task-definition-"
 }
