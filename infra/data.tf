@@ -23,6 +23,26 @@ data "aws_iam_policy_document" "autoscaler-lambda-policy-document" {
   }
 }
 
+data "aws_iam_policy_document" "file-system-policy-document" {
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "elasticfilesystem:ClientMount",
+      "elasticfilesystem:ClientWrite",
+      "elasticfilesystem:DescribeFileSystems",
+    ]
+
+    resources = [aws_efs_file_system.efs-file-system.arn]
+
+    condition {
+      test     = "StringEquals"
+      values   = [aws_efs_access_point.efs-access-point.arn]
+      variable = "elasticfilesystem:AccessPointArn"
+    }
+  }
+}
+
 data "aws_iam_policy_document" "query-log-group-policy-document" {
   statement {
     actions = [
