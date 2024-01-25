@@ -206,6 +206,17 @@ resource "aws_route53_zone" "hosted-zone" {
   provider = aws.us-east-1
 }
 
+resource "aws_security_group" "security-group" {
+  name_prefix = "mod-security-group-"
+
+  ingress {
+    cidr_blocks = ["0.0.0.0/0"]
+    from_port = local.minecraft_server_config["port"]
+    protocol = local.minecraft_server_config["protocol"]
+    to_port = local.minecraft_server_config["port"]
+  }
+}
+
 resource "random_id" "autoscaler-lambda-name" {
   byte_length = 10
   prefix      = "mod-autoscaler-"
