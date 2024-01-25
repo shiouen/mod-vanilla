@@ -226,7 +226,7 @@ resource "aws_route53_zone" "hosted-zone" {
 }
 
 resource "aws_security_group" "file-system-security-group" {
-  name_prefix = "mod-service-security-group-"
+  name_prefix = "mod-file-system-security-group-"
 
   ingress {
     security_groups = [aws_security_group.service-security-group.id]
