@@ -5,7 +5,7 @@ resource "aws_cloudwatch_log_group" "query-log-group" {
 }
 
 resource "aws_cloudwatch_log_resource_policy" "query-log-resource-policy" {
-  policy_document = data.aws_iam_policy_document.dns-query-log-group-policy-document.json
+  policy_document = data.aws_iam_policy_document.query-log-group-policy-document.json
   policy_name     = random_id.query-log-resource-policy-name.dec
   provider        = aws.us-east-1
 }

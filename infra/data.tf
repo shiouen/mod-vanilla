@@ -23,7 +23,7 @@ data "aws_iam_policy_document" "autoscaler-lambda-policy-document" {
   }
 }
 
-data "aws_iam_policy_document" "dns-query-log-group-policy-document" {
+data "aws_iam_policy_document" "query-log-group-policy-document" {
   statement {
     actions = [
       "logs:CreateLogStream",
