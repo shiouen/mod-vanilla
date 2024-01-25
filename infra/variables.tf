@@ -10,6 +10,26 @@ variable "domain_name" {
   type        = string
 }
 
+variable "minecraft_edition" {
+  default = "java"
+  type    = string
+
+  validation {
+    condition     = contains(["java", "bedrock"], var.minecraft_edition)
+    error_message = "Valid values for `minecraft_edition`: `java`, `bedrock`"
+  }
+}
+
+variable "minecraft_image_bedrock" {
+  default = "itzg/minecraft-bedrock-server"
+  type    = string
+}
+
+variable "minecraft_image_java" {
+  default = "itzg/minecraft-server"
+  type    = string
+}
+
 variable "subdomain_part" {
   default     = "minecraft"
   description = "The subdomain part."
