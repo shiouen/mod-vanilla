@@ -10,6 +10,12 @@ variable "domain_name" {
   type        = string
 }
 
+variable "fargate_spot_pricing" {
+  default     = false
+  description = "Use Fargate Spot pricing if set to true."
+  type        = bool
+}
+
 variable "minecraft_edition" {
   default = "java"
   type    = string

@@ -38,6 +38,25 @@ resource "aws_ecs_cluster_capacity_providers" "cluster-capacity-provider" {
   }
 }
 
+resource "aws_ecs_service" "service" {
+  cluster         = aws_ecs_cluster.cluster.id
+  desired_count   = 0
+  name            = random_id.service-name.dec
+  task_definition = aws_ecs_task_definition.task-definition.arn
+
+  capacity_provider_strategy {
+    base              = 1
+    capacity_provider = var.fargate_spot_pricing ? "FARGATE_SPOT" : "FARGATE"
+    weight            = 100
+  }
+
+  network_configuration {
+    assign_public_ip = true
+    security_groups  = [aws_security_group.service-security-group.id]
+    subnets          = []
+  }
+}
+
 resource "aws_ecs_task_definition" "task-definition" {
   container_definitions = jsonencode([
     {
@@ -206,14 +225,27 @@ resource "aws_route53_zone" "hosted-zone" {
   provider = aws.us-east-1
 }
 
-resource "aws_security_group" "security-group" {
-  name_prefix = "mod-security-group-"
+resource "aws_security_group" "file-system-security-group" {
+  name_prefix = "mod-service-security-group-"
+
+  ingress {
+    security_groups = [aws_security_group.service-security-group.id]
+    from_port       = 2049
+    protocol        = "TCP"
+    to_port         = 2049
+  }
+
+  vpc_id = module.vpc.vpc_id
+}
+
+resource "aws_security_group" "service-security-group" {
+  name_prefix = "mod-service-security-group-"
 
   ingress {
     cidr_blocks = ["0.0.0.0/0"]
-    from_port = local.minecraft_server_config["port"]
-    protocol = local.minecraft_server_config["protocol"]
-    to_port = local.minecraft_server_config["port"]
+    from_port   = local.minecraft_server_config["port"]
+    protocol    = local.minecraft_server_config["protocol"]
+    to_port     = local.minecraft_server_config["port"]
   }
 
   vpc_id = module.vpc.vpc_id
@@ -242,6 +274,11 @@ resource "random_id" "query-log-resource-policy-name" {
 resource "random_id" "query-log-subscription-filter-name" {
   byte_length = 10
   prefix      = "mod-${local.subdomain}-"
+}
+
+resource "random_id" "service-name" {
+  byte_length = 10
+  prefix      = "mod-service-"
 }
 
 resource "random_id" "task-definition-family" {
