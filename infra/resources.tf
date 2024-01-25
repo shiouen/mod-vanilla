@@ -18,6 +18,37 @@ resource "aws_cloudwatch_log_subscription_filter" "query-log-subscription-filter
   provider        = aws.us-east-1
 }
 
+resource "aws_efs_access_point" "efs-access-point" {
+  file_system_id = aws_efs_file_system.efs-file-system.id
+
+  posix_user {
+    gid = local.efs_gid
+    uid = local.efs_uid
+  }
+
+  root_directory {
+    creation_info {
+      owner_gid   = local.efs_gid
+      owner_uid   = local.efs_uid
+      permissions = "0755"
+    }
+
+    path = "/minecraft"
+  }
+}
+
+resource "aws_efs_file_system" "efs-file-system" {
+  encrypted = true
+
+  lifecycle {
+    prevent_destroy = true
+  }
+
+  tags = {
+    Name = random_id.efs-file-system-name.dec
+  }
+}
+
 resource "aws_iam_role" "autoscaler-lambda-role" {
   assume_role_policy = data.aws_iam_policy_document.autoscaler-lambda-policy-document.json
   name_prefix        = "mod-${local.subdomain}-"
@@ -60,16 +91,21 @@ resource "aws_route53_query_log" "query-log" {
   zone_id                  = aws_route53_zone.hosted-zone.zone_id
 }
 
-// the record is a dummy, to be changed whenever the container launches
-// allow_overwrite is recommended here because of the resource-drift
+// dummy record, to be changed whenever the container launches
+// which is why changes to the `records` property are ignored
 resource "aws_route53_record" "hosted-zone-a-record" {
-  allow_overwrite = true
   name            = local.subdomain
   provider        = aws.us-east-1
   records         = ["192.168.1.1"]
   ttl             = 30
   type            = "A"
   zone_id         = data.aws_route53_zone.root-hosted-zone.zone_id
+
+  lifecycle {
+    ignore_changes = [
+      records
+    ]
+  }
 }
 
 resource "aws_route53_record" "root-hosted-zone-ns-record" {
@@ -86,15 +122,21 @@ resource "aws_route53_zone" "hosted-zone" {
   provider = aws.us-east-1
 }
 
+resource "random_id" "autoscaler-lambda-name" {
+  byte_length = 10
+  prefix      = "mod-autoscaler-"
+}
+
+resource "random_id" "efs-file-system-name" {
+  byte_length = 10
+  prefix      = "mod-file-system-"
+}
+
 resource "random_id" "query-log-resource-policy-name" {
   byte_length = 10
   prefix      = "mod-${local.subdomain}-"
 }
 
-resource "random_id" "autoscaler-lambda-name" {
-  byte_length = 10
-  prefix      = "mod-autoscaler-"
-}
 
 resource "random_id" "query-log-subscription-filter-name" {
   byte_length = 10
