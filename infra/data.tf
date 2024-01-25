@@ -33,11 +33,11 @@ data "aws_iam_policy_document" "file-system-policy-document" {
       "elasticfilesystem:DescribeFileSystems",
     ]
 
-    resources = [aws_efs_file_system.efs-file-system.arn]
+    resources = [aws_efs_file_system.file-system.arn]
 
     condition {
       test     = "StringEquals"
-      values   = [aws_efs_access_point.efs-access-point.arn]
+      values   = [aws_efs_access_point.file-system-access-point.arn]
       variable = "elasticfilesystem:AccessPointArn"
     }
   }
@@ -57,6 +57,15 @@ data "aws_iam_policy_document" "query-log-group-policy-document" {
     principals {
       type        = "Service"
       identifiers = ["route53.amazonaws.com"]
+    }
+  }
+}
+
+data "aws_iam_policy_document" "task-definition-assume-role-policy-document" {
+  statement {
+    principals {
+      type        = "Service"
+      identifiers = ["ecs-tasks.amazonaws.com"]
     }
   }
 }

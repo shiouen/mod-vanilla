@@ -18,8 +18,8 @@ resource "aws_cloudwatch_log_subscription_filter" "query-log-subscription-filter
   provider        = aws.us-east-1
 }
 
-resource "aws_efs_access_point" "efs-access-point" {
-  file_system_id = aws_efs_file_system.efs-file-system.id
+resource "aws_efs_access_point" "file-system-access-point" {
+  file_system_id = aws_efs_file_system.file-system.id
 
   posix_user {
     gid = local.efs_gid
@@ -37,7 +37,7 @@ resource "aws_efs_access_point" "efs-access-point" {
   }
 }
 
-resource "aws_efs_file_system" "efs-file-system" {
+resource "aws_efs_file_system" "file-system" {
   encrypted = true
 
   lifecycle {
@@ -45,8 +45,13 @@ resource "aws_efs_file_system" "efs-file-system" {
   }
 
   tags = {
-    Name = random_id.efs-file-system-name.dec
+    Name = random_id.file-system-name.dec
   }
+}
+
+resource "aws_iam_policy" "file-system-policy" {
+  name_prefix = "mod-file-system-policy-"
+  policy = data.aws_iam_policy_document.file-system-policy-document.json
 }
 
 resource "aws_iam_role" "autoscaler-lambda-role" {
@@ -55,10 +60,19 @@ resource "aws_iam_role" "autoscaler-lambda-role" {
   provider           = aws.us-east-1
 }
 
+resource "aws_iam_role" "task-definition-role" {
+  assume_role_policy = data.aws_iam_policy_document.task-definition-assume-role-policy-document.json
+}
+
 resource "aws_iam_role_policy_attachment" "autoscaler-lambda-basic-execution-policy-attachment" {
   policy_arn = data.aws_iam_policy.autoscaler-lambda-basic-execution-policy.arn
   provider   = aws.us-east-1
   role       = aws_iam_role.autoscaler-lambda-role.name
+}
+
+resource "aws_iam_role_policy_attachment" "task-definition-role-file-system-policy-attachment" {
+  policy_arn = aws_iam_policy.file-system-policy.arn
+  role       = aws_iam_role.task-definition-role.name
 }
 
 resource "aws_lambda_function" "autoscaler-lambda" {
@@ -127,7 +141,7 @@ resource "random_id" "autoscaler-lambda-name" {
   prefix      = "mod-autoscaler-"
 }
 
-resource "random_id" "efs-file-system-name" {
+resource "random_id" "file-system-name" {
   byte_length = 10
   prefix      = "mod-file-system-"
 }
