@@ -22,3 +22,9 @@ variable "tags" {
   nullable    = false
   type        = map(string)
 }
+
+variable "vpc_id" {
+  default     = null
+  description = "The VPC id."
+  type        = string
+}
