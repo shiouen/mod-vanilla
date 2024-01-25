@@ -54,6 +54,18 @@ variable "server_memory" {
   type        = number
 }
 
+variable "server_shutdown_time" {
+  default     = 20
+  description = "Number of minutes to wait after the last client disconnects before terminating."
+  type        = number
+}
+
+variable "server_startup_time" {
+  default     = 10
+  description = "Number of minutes to wait for a connection after starting before terminating."
+  type        = number
+}
+
 variable "subdomain_part" {
   default     = "minecraft"
   description = "The subdomain part."

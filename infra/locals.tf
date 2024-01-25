@@ -1,5 +1,7 @@
 locals {
-  ecs_volume_name = "data"
+  ecs_cluster_name = random_id.cluster-name.dec
+  ecs_service_name = random_id.service-name.dec
+  ecs_volume_name  = "data"
 
   efs_gid = 1000
   efs_uid = 1000
@@ -18,6 +20,7 @@ locals {
     }
   }
   minecraft_server_container_name = "minecraft-server"
+  watchdog_server_container_name  = "watchdog-server"
 
   subdomain = "${var.subdomain_part}.${var.domain_name}"
 

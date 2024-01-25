@@ -19,7 +19,7 @@ resource "aws_cloudwatch_log_subscription_filter" "query-log-subscription-filter
 }
 
 resource "aws_ecs_cluster" "cluster" {
-  name = random_id.cluster-name.dec
+  name = local.ecs_cluster_name
 
   setting {
     name  = "containerInsights"
@@ -41,7 +41,7 @@ resource "aws_ecs_cluster_capacity_providers" "cluster-capacity-provider" {
 resource "aws_ecs_service" "service" {
   cluster         = aws_ecs_cluster.cluster.id
   desired_count   = 0
-  name            = random_id.service-name.dec
+  name            = local.ecs_service_name
   task_definition = aws_ecs_task_definition.task-definition.arn
 
   capacity_provider_strategy {
@@ -69,6 +69,13 @@ resource "aws_ecs_task_definition" "task-definition" {
           "awslogs-stream-prefix"    = local.minecraft_server_container_name
         }
       } : null
+      mountPoints = [
+        {
+          containerPath = "/data"
+          readOnly      = false
+          sourceVolume  = local.ecs_volume_name,
+        }
+      ]
       name         = local.minecraft_server_container_name
       portMappings = [
         {
@@ -77,20 +84,79 @@ resource "aws_ecs_task_definition" "task-definition" {
           protocol      = local.minecraft_server_config["protocol"]
         }
       ]
-      mountPoints = [
-        {
-          containerPath = "/data"
-          readOnly      = false
-          sourceVolume  = local.ecs_volume_name,
+    },
+    {
+      environment = [
+        { name = "CLUSTER", value = local.ecs_cluster_name },
+        { name = "SERVICE", value = local.ecs_service_name },
+        { name = "DNSZONE", value = aws_route53_zone.hosted-zone.id },
+        { name = "SERVERNAME", value = local.subdomain },
+        { name = "STARTUPMIN", value = tostring(var.server_startup_time) },
+        { name = "SHUTDOWNMIN", value = tostring(var.server_shutdown_time) },
+        #        SNSTOPIC = snsTopicArn,
+        #        TWILIOFROM = config.twilio.phoneFrom,
+        #        TWILIOTO = config.twilio.phoneTo,
+        #        TWILIOAID = config.twilio.accountId,
+        #        TWILIOAUTH = config.twilio.authCode,
+      ],
+      essential        = true
+      image            = "doctorray/minecraft-ecsfargate-watchdog"
+      logConfiguration = var.server_debug ? {
+        logDriver = "awslogs"
+        options   = {
+          "awslogs-logRetentionDays" = 3
+          "awslogs-stream-prefix"    = local.watchdog_server_container_name
         }
-      ]
+      } : null
+      name = local.watchdog_server_container_name
     }
   ])
 
-  family        = random_id.task-definition-family.dec
-  cpu           = var.server_cpu_units
-  memory        = var.server_memory
-  task_role_arn = aws_iam_role.task-definition-role.arn
+  /*
+
+    const watchdogContainer = new ecs.ContainerDefinition(
+      this,
+      'WatchDogContainer',
+      {
+        containerName: constants.WATCHDOG_SERVER_CONTAINER_NAME,
+        image: isDockerInstalled()
+          ? ecs.ContainerImage.fromAsset(
+              path.resolve(__dirname, '../../minecraft-ecsfargate-watchdog/')
+            )
+          : ecs.ContainerImage.fromRegistry(
+              'doctorray/minecraft-ecsfargate-watchdog'
+            ),
+        essential: true,
+        taskDefinition: taskDefinition,
+        environment: {
+          CLUSTER: constants.CLUSTER_NAME,
+          SERVICE: constants.SERVICE_NAME,
+          DNSZONE: hostedZoneId,
+          SERVERNAME: `${config.subdomainPart}.${config.domainName}`,
+          SNSTOPIC: snsTopicArn,
+          TWILIOFROM: config.twilio.phoneFrom,
+          TWILIOTO: config.twilio.phoneTo,
+          TWILIOAID: config.twilio.accountId,
+          TWILIOAUTH: config.twilio.authCode,
+          STARTUPMIN: config.startupMinutes,
+          SHUTDOWNMIN: config.shutdownMinutes,
+        },
+        logging: config.debug
+          ? new ecs.AwsLogDriver({
+              logRetention: logs.RetentionDays.THREE_DAYS,
+              streamPrefix: constants.WATCHDOG_SERVER_CONTAINER_NAME,
+            })
+          : undefined,
+      }
+    );
+  */
+
+  family                   = random_id.task-definition-family.dec
+  cpu                      = var.server_cpu_units
+  memory                   = var.server_memory
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["FARGATE"]
+  task_role_arn            = aws_iam_role.task-definition-role.arn
 
   volume {
     name = local.ecs_volume_name
