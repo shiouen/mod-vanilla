@@ -41,8 +41,15 @@ resource "aws_ecs_cluster_capacity_providers" "cluster-capacity-provider" {
 resource "aws_ecs_task_definition" "task-definition" {
   container_definitions = jsonencode([
     {
-      essential    = false
-      image        = local.minecraft_server_config["image"]
+      essential        = false
+      image            = local.minecraft_server_config["image"]
+      logConfiguration = var.server_debug ? {
+        logDriver = "awslogs"
+        options   = {
+          "awslogs-logRetentionDays" = 3
+          "awslogs-stream-prefix"    = local.minecraft_server_container_name
+        }
+      } : null
       name         = local.minecraft_server_container_name
       portMappings = [
         {
@@ -51,13 +58,13 @@ resource "aws_ecs_task_definition" "task-definition" {
           protocol      = local.minecraft_server_config["protocol"]
         }
       ]
-      logConfiguration = var.server_debug ? {
-        logDriver = "awslogs"
-        options   = {
-          "awslogs-logRetentionDays" = 3
-          "awslogs-stream-prefix"    = local.minecraft_server_container_name
+      mountPoints = [
+        {
+          containerPath = "/data"
+          readOnly      = false
+          sourceVolume  = local.ecs_volume_name,
         }
-      } : null
+      ]
     }
   ])
 
@@ -65,15 +72,6 @@ resource "aws_ecs_task_definition" "task-definition" {
   cpu           = var.server_cpu_units
   memory        = var.server_memory
   task_role_arn = aws_iam_role.task-definition-role.arn
-
-  //        logging: config.debug
-  //          ? new ecs.AwsLogDriver({
-  //              logRetention: logs.RetentionDays.THREE_DAYS,
-  //              streamPrefix: constants.MC_SERVER_CONTAINER_NAME,
-  //            })
-  //          : undefined,
-  //      }
-  //    );
 
   volume {
     name = local.ecs_volume_name
