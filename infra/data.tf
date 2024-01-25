@@ -4,6 +4,12 @@ data "archive_file" "autoscaler-lambda" {
   type        = "zip"
 }
 
+//noinspection X,MissingProperty
+data "aws_iam_policy" "autoscaler-lambda-basic-execution-policy" {
+  name     = "AWSLambdaBasicExecutionRole"
+  provider = aws.us-east-1
+}
+
 data "aws_iam_policy_document" "autoscaler-lambda-policy-document" {
   statement {
     effect = "Allow"

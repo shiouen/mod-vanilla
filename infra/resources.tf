@@ -24,6 +24,12 @@ resource "aws_iam_role" "autoscaler-lambda-role" {
   provider           = aws.us-east-1
 }
 
+resource "aws_iam_role_policy_attachment" "autoscaler-lambda-basic-execution-policy-attachment" {
+  policy_arn = data.aws_iam_policy.autoscaler-lambda-basic-execution-policy.arn
+  provider   = aws.us-east-1
+  role       = aws_iam_role.autoscaler-lambda-role.name
+}
+
 resource "aws_lambda_function" "autoscaler-lambda" {
   filename         = data.archive_file.autoscaler-lambda.output_path
   function_name    = random_id.autoscaler-lambda-name.dec
@@ -41,11 +47,11 @@ resource "aws_lambda_function" "autoscaler-lambda" {
 }
 
 resource "aws_lambda_permission" "query-log-lambda-permission" {
-  action         = "lambda:InvokeFunction"
-  function_name  = aws_lambda_function.autoscaler-lambda.function_name
-  principal      = "logs.amazonaws.com"
-  source_arn     = "${aws_cloudwatch_log_group.query-log-group.arn}:*"
-  provider       = aws.us-east-1
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.autoscaler-lambda.function_name
+  principal     = "logs.amazonaws.com"
+  source_arn    = "${aws_cloudwatch_log_group.query-log-group.arn}:*"
+  provider      = aws.us-east-1
 }
 
 resource "aws_route53_query_log" "query-log" {
