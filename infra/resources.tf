@@ -40,8 +40,44 @@ resource "aws_ecs_cluster_capacity_providers" "cluster-capacity-provider" {
 
 resource "aws_ecs_task_definition" "task-definition" {
   container_definitions = jsonencode([
+    {
+      name         = local.minecraft_server_container_name
+      image        = local.minecraft_server_config["image"]
+      essential    = false
+      portMappings = [
+        {
+          containerPort = local.minecraft_server_config["port"]
+          hostPort      = local.minecraft_server_config["port"]
+          protocol      = local.minecraft_server_config["protocol"]
+        }
+      ]
+    }
   ])
 
+  //    const minecraftServerContainer = new ecs.ContainerDefinition(
+  //      this,
+  //      'ServerContainer',
+  //      {
+  //        containerName: constants.MC_SERVER_CONTAINER_NAME,
+  //        image: ecs.ContainerImage.fromRegistry(minecraftServerConfig.image),
+  //        portMappings: [
+  //          {
+  //            containerPort: minecraftServerConfig.port,
+  //            hostPort: minecraftServerConfig.port,
+  //            protocol: minecraftServerConfig.protocol,
+  //          },
+  //        ],
+  //        environment: config.minecraftImageEnv,
+  //        essential: false,
+  //        taskDefinition,
+  //        logging: config.debug
+  //          ? new ecs.AwsLogDriver({
+  //              logRetention: logs.RetentionDays.THREE_DAYS,
+  //              streamPrefix: constants.MC_SERVER_CONTAINER_NAME,
+  //            })
+  //          : undefined,
+  //      }
+  //    );
   family = random_id.task-definition-family.dec
 
   volume {

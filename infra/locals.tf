@@ -4,7 +4,7 @@ locals {
   efs_gid = 1000
   efs_uid = 1000
 
-  minecraft_server_config = local.minecraft_server_configs_by_edition[var.minecraft_edition]
+  minecraft_server_config             = local.minecraft_server_configs_by_edition[var.minecraft_edition]
   minecraft_server_configs_by_edition = {
     "java" = {
       image    = var.minecraft_image_java
@@ -17,6 +17,7 @@ locals {
       protocol = "UDP"
     }
   }
+  minecraft_server_container_name = "minecraft-server"
 
   subdomain = "${var.subdomain_part}.${var.domain_name}"
 
