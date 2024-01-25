@@ -18,6 +18,26 @@ resource "aws_cloudwatch_log_subscription_filter" "query-log-subscription-filter
   provider        = aws.us-east-1
 }
 
+resource "aws_ecs_cluster" "cluster" {
+  name = random_id.cluster-name.dec
+
+  setting {
+    name  = "containerInsights"
+    value = "enabled"
+  }
+}
+
+resource "aws_ecs_cluster_capacity_providers" "cluster-capacity-provider" {
+  capacity_providers = ["FARGATE"]
+  cluster_name = aws_ecs_cluster.cluster.name
+
+  default_capacity_provider_strategy {
+    base = 1
+    capacity_provider = "FARGATE"
+    weight = 100
+  }
+}
+
 resource "aws_efs_access_point" "file-system-access-point" {
   file_system_id = aws_efs_file_system.file-system.id
 
@@ -141,6 +161,11 @@ resource "random_id" "autoscaler-lambda-name" {
   prefix      = "mod-autoscaler-"
 }
 
+resource "random_id" "cluster-name" {
+  byte_length = 10
+  prefix      = "mod-cluster-"
+}
+
 resource "random_id" "file-system-name" {
   byte_length = 10
   prefix      = "mod-file-system-"
@@ -150,7 +175,6 @@ resource "random_id" "query-log-resource-policy-name" {
   byte_length = 10
   prefix      = "mod-${local.subdomain}-"
 }
-
 
 resource "random_id" "query-log-subscription-filter-name" {
   byte_length = 10

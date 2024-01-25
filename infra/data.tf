@@ -12,14 +12,13 @@ data "aws_iam_policy" "autoscaler-lambda-basic-execution-policy" {
 
 data "aws_iam_policy_document" "autoscaler-lambda-policy-document" {
   statement {
-    effect = "Allow"
+    actions = ["sts:AssumeRole"]
+    effect  = "Allow"
 
     principals {
-      type        = "Service"
       identifiers = ["lambda.amazonaws.com"]
+      type        = "Service"
     }
-
-    actions = ["sts:AssumeRole"]
   }
 }
 
@@ -63,9 +62,12 @@ data "aws_iam_policy_document" "query-log-group-policy-document" {
 
 data "aws_iam_policy_document" "task-definition-assume-role-policy-document" {
   statement {
+    actions = ["sts:AssumeRole"]
+    effect  = "Allow"
+
     principals {
-      type        = "Service"
       identifiers = ["ecs-tasks.amazonaws.com"]
+      type        = "Service"
     }
   }
 }
