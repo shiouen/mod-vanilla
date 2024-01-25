@@ -30,6 +30,24 @@ variable "minecraft_image_java" {
   type    = string
 }
 
+variable "server_debug" {
+  default     = false
+  description = "Setting to `true` enables debug mode, which enables cloudwatch logs for the server containers."
+  type        = bool
+}
+
+variable "server_cpu_units" {
+  default     = 1024
+  description = "The number of cpu units used by the task running the Minecraft server."
+  type        = number
+}
+
+variable "server_memory" {
+  default     = 2048
+  description = "The amount (in MiB) of memory used by the task running the Minecraft server."
+  type        = number
+}
+
 variable "subdomain_part" {
   default     = "minecraft"
   description = "The subdomain part."

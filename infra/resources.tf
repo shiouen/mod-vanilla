@@ -41,9 +41,9 @@ resource "aws_ecs_cluster_capacity_providers" "cluster-capacity-provider" {
 resource "aws_ecs_task_definition" "task-definition" {
   container_definitions = jsonencode([
     {
-      name         = local.minecraft_server_container_name
-      image        = local.minecraft_server_config["image"]
       essential    = false
+      image        = local.minecraft_server_config["image"]
+      name         = local.minecraft_server_container_name
       portMappings = [
         {
           containerPort = local.minecraft_server_config["port"]
@@ -51,25 +51,21 @@ resource "aws_ecs_task_definition" "task-definition" {
           protocol      = local.minecraft_server_config["protocol"]
         }
       ]
+      logConfiguration = var.server_debug ? {
+        logDriver = "awslogs"
+        options   = {
+          "awslogs-logRetentionDays" = 3
+          "awslogs-stream-prefix"    = local.minecraft_server_container_name
+        }
+      } : null
     }
   ])
 
-  //    const minecraftServerContainer = new ecs.ContainerDefinition(
-  //      this,
-  //      'ServerContainer',
-  //      {
-  //        containerName: constants.MC_SERVER_CONTAINER_NAME,
-  //        image: ecs.ContainerImage.fromRegistry(minecraftServerConfig.image),
-  //        portMappings: [
-  //          {
-  //            containerPort: minecraftServerConfig.port,
-  //            hostPort: minecraftServerConfig.port,
-  //            protocol: minecraftServerConfig.protocol,
-  //          },
-  //        ],
-  //        environment: config.minecraftImageEnv,
-  //        essential: false,
-  //        taskDefinition,
+  family        = random_id.task-definition-family.dec
+  cpu           = var.server_cpu_units
+  memory        = var.server_memory
+  task_role_arn = aws_iam_role.task-definition-role.arn
+
   //        logging: config.debug
   //          ? new ecs.AwsLogDriver({
   //              logRetention: logs.RetentionDays.THREE_DAYS,
@@ -78,7 +74,6 @@ resource "aws_ecs_task_definition" "task-definition" {
   //          : undefined,
   //      }
   //    );
-  family = random_id.task-definition-family.dec
 
   volume {
     name = local.ecs_volume_name
@@ -94,7 +89,6 @@ resource "aws_ecs_task_definition" "task-definition" {
     }
   }
 }
-
 
 resource "aws_efs_access_point" "file-system-access-point" {
   file_system_id = aws_efs_file_system.file-system.id
