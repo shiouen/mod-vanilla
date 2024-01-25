@@ -215,6 +215,8 @@ resource "aws_security_group" "security-group" {
     protocol = local.minecraft_server_config["protocol"]
     to_port = local.minecraft_server_config["port"]
   }
+
+  vpc_id = module.vpc.vpc_id
 }
 
 resource "random_id" "autoscaler-lambda-name" {
