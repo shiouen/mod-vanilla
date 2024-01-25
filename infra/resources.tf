@@ -10,9 +10,42 @@ resource "aws_cloudwatch_log_resource_policy" "query-log-resource-policy" {
   provider        = aws.us-east-1
 }
 
+resource "aws_cloudwatch_log_subscription_filter" "query-log-subscription-filter" {
+  destination_arn = aws_lambda_function.autoscaler-lambda.arn
+  filter_pattern  = local.subdomain
+  log_group_name  = aws_cloudwatch_log_group.query-log-group.name
+  name            = random_id.query-log-subscription-filter-name.dec
+  provider        = aws.us-east-1
+}
+
 resource "aws_iam_role" "autoscaler-lambda-role" {
-  name_prefix        = "mod-${local.subdomain}-"
   assume_role_policy = data.aws_iam_policy_document.autoscaler-lambda-policy-document.json
+  name_prefix        = "mod-${local.subdomain}-"
+  provider           = aws.us-east-1
+}
+
+resource "aws_lambda_function" "autoscaler-lambda" {
+  filename         = data.archive_file.autoscaler-lambda.output_path
+  function_name    = random_id.autoscaler-lambda-name.dec
+  handler          = "autoscaler.handler"
+  provider         = aws.us-east-1
+  role             = aws_iam_role.autoscaler-lambda-role.arn
+  runtime          = "python3.8"
+  source_code_hash = data.archive_file.autoscaler-lambda.output_base64sha256
+
+  // TODO add REGION: config.serverRegion, CLUSTER: constants.CLUSTER_NAME, SERVICE: constants.SERVICE_NAME
+  environment {
+    variables = {
+    }
+  }
+}
+
+resource "aws_lambda_permission" "query-log-lambda-permission" {
+  action         = "lambda:InvokeFunction"
+  function_name  = aws_lambda_function.autoscaler-lambda.function_name
+  principal      = "logs.amazonaws.com"
+  source_arn     = "${aws_cloudwatch_log_group.query-log-group.arn}:*"
+  provider       = aws.us-east-1
 }
 
 resource "aws_route53_query_log" "query-log" {
@@ -47,22 +80,6 @@ resource "aws_route53_zone" "hosted-zone" {
   provider = aws.us-east-1
 }
 
-resource "aws_lambda_function" "autoscaler-lambda" {
-  filename         = data.archive_file.autoscaler-lambda.output_path
-  function_name    = random_id.autoscaler-lambda-name.dec
-  handler          = "autoscaler.handler"
-  provider         = aws.us-east-1
-  role             = aws_iam_role.autoscaler-lambda-role.arn
-  runtime          = "python3.8"
-  source_code_hash = data.archive_file.autoscaler-lambda.output_base64sha256
-
-  // TODO add REGION: config.serverRegion, CLUSTER: constants.CLUSTER_NAME, SERVICE: constants.SERVICE_NAME
-  environment {
-    variables = {
-    }
-  }
-}
-
 resource "random_id" "query-log-resource-policy-name" {
   byte_length = 10
   prefix      = "mod-${local.subdomain}-"
@@ -71,4 +88,9 @@ resource "random_id" "query-log-resource-policy-name" {
 resource "random_id" "autoscaler-lambda-name" {
   byte_length = 10
   prefix      = "mod-autoscaler-"
+}
+
+resource "random_id" "query-log-subscription-filter-name" {
+  byte_length = 10
+  prefix      = "mod-${local.subdomain}-"
 }
