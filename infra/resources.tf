@@ -161,6 +161,10 @@ resource "aws_efs_access_point" "file-system-access-point" {
 
     path = "/minecraft"
   }
+
+  tags = {
+    Name = random_id.file-system-access-point-name.dec
+  }
 }
 
 resource "aws_efs_file_system" "file-system" {
@@ -176,9 +180,10 @@ resource "aws_efs_file_system" "file-system" {
 }
 
 resource "aws_efs_mount_target" "file-system-mount-target" {
-  count          = length(module.vpc.isolated_subnet_ids)
-  file_system_id = aws_efs_file_system.file-system.id
-  subnet_id      = module.vpc.isolated_subnet_ids[count.index]
+  count           = length(module.vpc.isolated_subnet_ids)
+  file_system_id  = aws_efs_file_system.file-system.id
+  security_groups = [aws_security_group.file-system-security-group.id]
+  subnet_id       = module.vpc.isolated_subnet_ids[count.index]
 }
 
 resource "aws_iam_policy" "service-policy" {
@@ -368,36 +373,41 @@ resource "aws_sns_topic_subscription" "server-notifications-email-subscription" 
 }
 
 resource "random_id" "autoscaler-lambda-name" {
-  byte_length = 10
+  byte_length = 5
   prefix      = "mod-autoscaler-"
 }
 
 resource "random_id" "cluster-name" {
-  byte_length = 10
+  byte_length = 5
   prefix      = "mod-cluster-"
 }
 
 resource "random_id" "file-system-name" {
-  byte_length = 10
+  byte_length = 5
   prefix      = "mod-file-system-"
 }
 
+resource "random_id" "file-system-access-point-name" {
+  byte_length = 5
+  prefix      = "mod-file-system-access-point-name-"
+}
+
 resource "random_id" "query-log-resource-policy-name" {
-  byte_length = 10
-  prefix      = "mod-${local.subdomain}-"
+  byte_length = 5
+  prefix      = "mod-query-log-resource-policy-"
 }
 
 resource "random_id" "query-log-subscription-filter-name" {
-  byte_length = 10
-  prefix      = "mod-${local.subdomain}-"
+  byte_length = 5
+  prefix      = "mod-query-log-sub-filter-"
 }
 
 resource "random_id" "service-name" {
-  byte_length = 10
+  byte_length = 5
   prefix      = "mod-service-"
 }
 
 resource "random_id" "task-definition-family" {
-  byte_length = 10
+  byte_length = 5
   prefix      = "mod-task-definition-"
 }

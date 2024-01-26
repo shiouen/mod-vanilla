@@ -84,30 +84,30 @@ resource "aws_subnet" "isolated" {
 }
 
 resource "random_id" "isolated-route-table-name" {
-  byte_length = 10
+  byte_length = 5
   count       = 3
   prefix      = "mod-isolated-route-table-"
 }
 
 resource "random_id" "isolated-subnet-name" {
-  byte_length = 10
+  byte_length = 5
   count       = 3
   prefix      = "mod-isolated-subnet-"
 }
 
 resource "random_id" "public-route-table-name" {
-  byte_length = 10
+  byte_length = 5
   count       = 3
   prefix      = "mod-public-route-table-"
 }
 
 resource "random_id" "public-subnet-name" {
-  byte_length = 10
+  byte_length = 5
   count       = 3
   prefix      = "mod-public-subnet-"
 }
 
 resource "random_id" "vpc-name" {
-  byte_length = 10
+  byte_length = 5
   prefix      = "mod-vpc-"
 }
