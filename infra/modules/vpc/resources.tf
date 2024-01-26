@@ -1,5 +1,9 @@
 resource "aws_internet_gateway" "internet-gateway" {
   vpc_id = aws_vpc.vpc[0].id
+
+  tags = {
+    Name = random_id.internet-gateway-name.dec
+  }
 }
 
 resource "aws_vpc" "vpc" {
@@ -81,6 +85,11 @@ resource "aws_subnet" "isolated" {
     Name                                  = random_id.isolated-subnet-name[count.index].dec
     "${var.vpc_isolated_subnet_tag_name}" = "${var.vpc_isolated_subnet_tag_value}"
   }
+}
+
+resource "random_id" "internet-gateway-name" {
+  byte_length = 5
+  prefix      = "mod-igw-"
 }
 
 resource "random_id" "isolated-route-table-name" {
