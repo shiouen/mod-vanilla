@@ -20,11 +20,13 @@ locals {
     }
   }
   minecraft_server_container_name = "minecraft-server"
-  watchdog_server_container_name  = "watchdog-server"
 
-  subdomain = "${var.subdomain_part}.${var.domain_name}"
+  provisioned_vpc_enabled = var.vpc_id != null
+  subdomain               = "${var.subdomain_part}.${var.domain_name}"
 
   tags = merge(var.tags, {
     "project-id" = local.subdomain
   })
+
+  watchdog_server_container_name = "watchdog-server"
 }
