@@ -230,10 +230,17 @@ resource "aws_iam_role_policy_attachment" "autoscaler-lambda-basic-execution-pol
   role       = aws_iam_role.autoscaler-lambda-role.name
 }
 
+resource "aws_iam_role_policy_attachment" "autoscaler-lambda-cluster-policy-attachment" {
+  policy_arn = aws_iam_policy.cluster-policy.arn
+  provider   = aws.us-east-1
+  role       = aws_iam_role.autoscaler-lambda-role.name
+}
+
 resource "aws_iam_role_policy_attachment" "task-definition-role-cluster-policy-attachment" {
   policy_arn = aws_iam_policy.cluster-policy.arn
   role       = aws_iam_role.task-definition-role.name
 }
+
 resource "aws_iam_role_policy_attachment" "task-definition-role-file-system-policy-attachment" {
   policy_arn = aws_iam_policy.file-system-policy.arn
   role       = aws_iam_role.task-definition-role.name
