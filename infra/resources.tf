@@ -96,7 +96,7 @@ resource "aws_ecs_task_definition" "task-definition" {
         { name = "SERVERNAME", value = local.subdomain },
         { name = "STARTUPMIN", value = tostring(var.server_startup_time) },
         { name = "SHUTDOWNMIN", value = tostring(var.server_shutdown_time) },
-        #        SNSTOPIC = snsTopicArn,
+        { name = "SNSTOPIC", value = aws_sns_topic.server-notifications.arn },
         #        TWILIOFROM = config.twilio.phoneFrom,
         #        TWILIOTO = config.twilio.phoneTo,
         #        TWILIOAID = config.twilio.accountId,
