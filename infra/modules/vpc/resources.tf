@@ -11,13 +11,57 @@ resource "aws_vpc" "vpc" {
   }
 }
 
-resource "aws_subnet" "public" {
-  count      = local.provisioned_vpc_enabled ? 0 : length(local.public_subnet_cidr_blocks_per_az)
-  cidr_block = element(values(local.public_subnet_cidr_blocks_per_az), count.index)
-  vpc_id     = aws_vpc.vpc[0].id
+resource "aws_route_table" "isolated" {
+  count  = local.provisioned_vpc_enabled ? 0 : length(local.isolated_subnet_cidr_blocks_per_az)
+  vpc_id = aws_vpc.vpc[0].id
 
-  map_public_ip_on_launch = true
+  route {
+    cidr_block = aws_vpc.vpc[0].cidr_block
+    gateway_id = "local"
+  }
+
+  tags = {
+    Name = random_id.isolated-route-table-name[count.index].dec
+  }
+}
+
+resource "aws_route_table" "public" {
+  count  = local.provisioned_vpc_enabled ? 0 : length(local.public_subnet_cidr_blocks_per_az)
+  vpc_id = aws_vpc.vpc[0].id
+
+  route {
+    cidr_block = aws_vpc.vpc[0].cidr_block
+    gateway_id = "local"
+  }
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.internet-gateway.id
+  }
+
+  tags = {
+    Name = random_id.public-route-table-name[count.index].dec
+  }
+}
+
+resource "aws_route_table_association" "isolated" {
+  count          = local.provisioned_vpc_enabled ? 0 : length(local.isolated_subnet_cidr_blocks_per_az)
+  route_table_id = aws_route_table.isolated[count.index].id
+  subnet_id      = aws_subnet.isolated[count.index].id
+}
+
+resource "aws_route_table_association" "public" {
+  count          = local.provisioned_vpc_enabled ? 0 : length(local.public_subnet_cidr_blocks_per_az)
+  route_table_id = aws_route_table.public[count.index].id
+  subnet_id      = aws_subnet.public[count.index].id
+}
+
+resource "aws_subnet" "public" {
   availability_zone       = element(keys(local.public_subnet_cidr_blocks_per_az), count.index)
+  cidr_block              = element(values(local.public_subnet_cidr_blocks_per_az), count.index)
+  count                   = local.provisioned_vpc_enabled ? 0 : length(local.public_subnet_cidr_blocks_per_az)
+  map_public_ip_on_launch = true
+  vpc_id                  = aws_vpc.vpc[0].id
 
   tags = {
     Name                                = random_id.public-subnet-name[count.index].dec
@@ -39,19 +83,31 @@ resource "aws_subnet" "isolated" {
   }
 }
 
+resource "random_id" "isolated-route-table-name" {
+  byte_length = 10
+  count       = 3
+  prefix      = "mod-isolated-route-table-"
+}
+
 resource "random_id" "isolated-subnet-name" {
   byte_length = 10
   count       = 3
   prefix      = "mod-isolated-subnet-"
 }
 
-resource "random_id" "vpc-name" {
+resource "random_id" "public-route-table-name" {
   byte_length = 10
-  prefix      = "mod-vpc-"
+  count       = 3
+  prefix      = "mod-public-route-table-"
 }
 
 resource "random_id" "public-subnet-name" {
   byte_length = 10
   count       = 3
   prefix      = "mod-public-subnet-"
+}
+
+resource "random_id" "vpc-name" {
+  byte_length = 10
+  prefix      = "mod-vpc-"
 }
