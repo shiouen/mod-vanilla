@@ -345,7 +345,7 @@ resource "aws_security_group" "service-security-group" {
 }
 
 resource "aws_sns_topic" "server-notifications-topic" {
-  name_prefix  = "mod-server-notifications-"
+  name_prefix  = "mod-server-notifications-topic-"
   display_name = "MOD Server Notifications"
 }
 
