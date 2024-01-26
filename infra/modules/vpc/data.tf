@@ -1,4 +1,17 @@
 data "aws_vpc" "provisioned-vpc" {
-  count = local.provisioned_vpc_enabled ? 1 : 0
-  id    = var.vpc_id
+  count  = local.provisioned_vpc_enabled ? 1 : 0
+  id = var.vpc_id
+}
+
+data "aws_subnets" "provisioned-subnets" {
+  count  = local.provisioned_vpc_enabled ? 1 : 0
+
+  filter {
+    name   = "vpc-id"
+    values = [var.vpc_id]
+  }
+
+  tags = {
+    "${var.vpc_public_subnet_tag_name}" = "${var.vpc_public_subnet_tag_value}"
+  }
 }
