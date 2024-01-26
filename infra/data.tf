@@ -12,6 +12,11 @@ data "aws_iam_policy" "autoscaler-lambda-basic-execution-policy" {
   provider = aws.us-east-1
 }
 
+//noinspection X,MissingProperty
+data "aws_iam_policy" "task-execution-policy" {
+  name = "AmazonECSTaskExecutionRolePolicy"
+}
+
 data "aws_iam_policy_document" "autoscaler-lambda-policy-document" {
   statement {
     actions = ["sts:AssumeRole"]

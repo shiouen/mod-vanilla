@@ -1,3 +1,7 @@
+resource "aws_internet_gateway" "internet-gateway" {
+  vpc_id = aws_vpc.vpc[0].id
+}
+
 resource "aws_vpc" "vpc" {
   count      = local.provisioned_vpc_enabled ? 0 : 1
   cidr_block = "10.0.0.0/16"

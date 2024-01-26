@@ -4,6 +4,11 @@ resource "aws_cloudwatch_log_group" "query-log-group" {
   provider          = aws.us-east-1
 }
 
+resource "aws_cloudwatch_log_group" "server-log-group" {
+  name_prefix       = "mod-server-debug-logs-"
+  retention_in_days = 3
+}
+
 resource "aws_cloudwatch_log_resource_policy" "query-log-resource-policy" {
   policy_document = data.aws_iam_policy_document.query-log-group-policy-document.json
   policy_name     = random_id.query-log-resource-policy-name.dec
@@ -65,8 +70,9 @@ resource "aws_ecs_task_definition" "task-definition" {
       logConfiguration = var.server_debug ? {
         logDriver = "awslogs"
         options   = {
-          "awslogs-logRetentionDays" = 3
-          "awslogs-stream-prefix"    = local.minecraft_server_container_name
+          "awslogs-group"         = aws_cloudwatch_log_group.server-log-group.name
+          "awslogs-region"        = var.aws_region
+          "awslogs-stream-prefix" = local.watchdog_server_container_name
         }
       } : null
       mountPoints = [
@@ -104,8 +110,9 @@ resource "aws_ecs_task_definition" "task-definition" {
       logConfiguration = var.server_debug ? {
         logDriver = "awslogs"
         options   = {
-          "awslogs-logRetentionDays" = 3
-          "awslogs-stream-prefix"    = local.watchdog_server_container_name
+          "awslogs-group"         = aws_cloudwatch_log_group.server-log-group.name
+          "awslogs-region"        = var.aws_region
+          "awslogs-stream-prefix" = local.watchdog_server_container_name
         }
       } : null
       name = local.watchdog_server_container_name
@@ -114,20 +121,6 @@ resource "aws_ecs_task_definition" "task-definition" {
 
   /*
 
-    const watchdogContainer = new ecs.ContainerDefinition(
-      this,
-      'WatchDogContainer',
-      {
-        containerName: constants.WATCHDOG_SERVER_CONTAINER_NAME,
-        image: isDockerInstalled()
-          ? ecs.ContainerImage.fromAsset(
-              path.resolve(__dirname, '../../minecraft-ecsfargate-watchdog/')
-            )
-          : ecs.ContainerImage.fromRegistry(
-              'doctorray/minecraft-ecsfargate-watchdog'
-            ),
-        essential: true,
-        taskDefinition: taskDefinition,
         environment: {
           CLUSTER: constants.CLUSTER_NAME,
           SERVICE: constants.SERVICE_NAME,
@@ -141,16 +134,9 @@ resource "aws_ecs_task_definition" "task-definition" {
           STARTUPMIN: config.startupMinutes,
           SHUTDOWNMIN: config.shutdownMinutes,
         },
-        logging: config.debug
-          ? new ecs.AwsLogDriver({
-              logRetention: logs.RetentionDays.THREE_DAYS,
-              streamPrefix: constants.WATCHDOG_SERVER_CONTAINER_NAME,
-            })
-          : undefined,
-      }
-    );
   */
 
+  execution_role_arn       = aws_iam_role.task-execution-role.arn
   family                   = random_id.task-definition-family.dec
   cpu                      = var.server_cpu_units
   memory                   = var.server_memory
@@ -235,6 +221,11 @@ resource "aws_iam_role" "task-definition-role" {
   name_prefix        = "mod-task-definition-role-"
 }
 
+resource "aws_iam_role" "task-execution-role" {
+  assume_role_policy = data.aws_iam_policy_document.task-definition-assume-role-policy-document.json
+  name_prefix        = "mod-task-execution-role"
+}
+
 resource "aws_iam_role_policy_attachment" "autoscaler-lambda-basic-execution-policy-attachment" {
   policy_arn = data.aws_iam_policy.autoscaler-lambda-basic-execution-policy.arn
   provider   = aws.us-east-1
@@ -265,6 +256,11 @@ resource "aws_iam_role_policy_attachment" "task-definition-role-hosted-zone-poli
 resource "aws_iam_role_policy_attachment" "task-definition-role-server-notifications-policy-attachment" {
   policy_arn = aws_iam_policy.server-notifications-policy.arn
   role       = aws_iam_role.task-definition-role.name
+}
+
+resource "aws_iam_role_policy_attachment" "task-execution-policy-attachment" {
+  policy_arn = data.aws_iam_policy.task-execution-policy.arn
+  role       = aws_iam_role.task-execution-role.name
 }
 
 resource "aws_lambda_function" "autoscaler-lambda" {
