@@ -204,6 +204,11 @@ resource "aws_efs_file_system" "file-system" {
   }
 }
 
+resource "aws_iam_policy" "cluster-policy" {
+  name_prefix = "mod-cluster-policy-"
+  policy      = data.aws_iam_policy_document.cluster-policy-document.json
+}
+
 resource "aws_iam_policy" "file-system-policy" {
   name_prefix = "mod-file-system-policy-"
   policy      = data.aws_iam_policy_document.file-system-policy-document.json
@@ -225,6 +230,10 @@ resource "aws_iam_role_policy_attachment" "autoscaler-lambda-basic-execution-pol
   role       = aws_iam_role.autoscaler-lambda-role.name
 }
 
+resource "aws_iam_role_policy_attachment" "task-definition-role-cluster-policy-attachment" {
+  policy_arn = aws_iam_policy.cluster-policy.arn
+  role       = aws_iam_role.task-definition-role.name
+}
 resource "aws_iam_role_policy_attachment" "task-definition-role-file-system-policy-attachment" {
   policy_arn = aws_iam_policy.file-system-policy.arn
   role       = aws_iam_role.task-definition-role.name

@@ -22,16 +22,28 @@ data "aws_iam_policy_document" "autoscaler-lambda-policy-document" {
   }
 }
 
+data "aws_iam_policy_document" "cluster-policy-document" {
+  statement {
+    actions   = ["ecs:*"]
+    effect    = "Allow"
+    resources = ["${aws_ecs_task_definition.task-definition.arn}/*"]
+  }
+
+  statement {
+    actions   = ["ec2:DescribeNetworkInterfaces"]
+    effect    = "Allow"
+    resources = ["*"]
+  }
+}
+
 data "aws_iam_policy_document" "file-system-policy-document" {
   statement {
-    effect = "Allow"
-
     actions = [
       "elasticfilesystem:ClientMount",
       "elasticfilesystem:ClientWrite",
       "elasticfilesystem:DescribeFileSystems",
     ]
-
+    effect    = "Allow"
     resources = [aws_efs_file_system.file-system.arn]
 
     condition {
