@@ -214,6 +214,11 @@ resource "aws_iam_policy" "file-system-policy" {
   policy      = data.aws_iam_policy_document.file-system-policy-document.json
 }
 
+resource "aws_iam_policy" "hosted-zone-policy" {
+  name_prefix = "mod-hosted-zone-policy-"
+  policy      = data.aws_iam_policy_document.hosted-zone-policy-document.json
+}
+
 resource "aws_iam_role" "autoscaler-lambda-role" {
   assume_role_policy = data.aws_iam_policy_document.autoscaler-lambda-policy-document.json
   name_prefix        = "mod-${local.subdomain}-"
@@ -241,7 +246,7 @@ resource "aws_iam_role_policy_attachment" "task-definition-role-cluster-policy-a
   role       = aws_iam_role.task-definition-role.name
 }
 
-resource "aws_iam_role_policy_attachment" "task-definition-role-file-system-policy-attachment" {
+resource "aws_iam_role_policy_attachment" "task-definition-role-hosted-zone-policy-attachment" {
   policy_arn = aws_iam_policy.file-system-policy.arn
   role       = aws_iam_role.task-definition-role.name
 }

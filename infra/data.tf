@@ -54,6 +54,18 @@ data "aws_iam_policy_document" "file-system-policy-document" {
   }
 }
 
+data "aws_iam_policy_document" "hosted-zone-policy-document" {
+  statement {
+    actions = [
+      "route53:GetHostedZone",
+      "route53:ChangeResourceRecordSets",
+      "route53:ListResourceRecordSets",
+    ]
+    effect    = "Allow"
+    resources = [aws_route53_zone.hosted-zone.arn]
+  }
+}
+
 data "aws_iam_policy_document" "query-log-group-policy-document" {
   statement {
     actions = [
