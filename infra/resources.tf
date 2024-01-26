@@ -1,5 +1,5 @@
 resource "aws_cloudwatch_log_group" "query-log-group" {
-  name_prefix       = "mod-${local.subdomain}-dns-queries-"
+  name_prefix       = "mod-query-logs-"
   retention_in_days = 3
   provider          = aws.us-east-1
 }
@@ -208,7 +208,7 @@ resource "aws_iam_policy" "server-notifications-policy" {
 
 resource "aws_iam_role" "autoscaler-lambda-role" {
   assume_role_policy = data.aws_iam_policy_document.autoscaler-lambda-policy-document.json
-  name_prefix        = "mod-${local.subdomain}-"
+  name_prefix        = "mod-autoscaler-role-"
   provider           = aws.us-east-1
 }
 
@@ -332,6 +332,13 @@ resource "aws_security_group" "file-system-security-group" {
     to_port         = 2049
   }
 
+  egress {
+    cidr_blocks = ["0.0.0.0/0"]
+    from_port   = 0
+    protocol    = "-1"
+    to_port     = 0
+  }
+
   vpc_id = module.vpc.vpc_id
 }
 
@@ -389,7 +396,7 @@ resource "random_id" "file-system-name" {
 
 resource "random_id" "file-system-access-point-name" {
   byte_length = 5
-  prefix      = "mod-file-system-access-point-name-"
+  prefix      = "mod-file-system-access-point-"
 }
 
 resource "random_id" "query-log-resource-policy-name" {
