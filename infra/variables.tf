@@ -48,6 +48,13 @@ variable "server_cpu_units" {
   type        = number
 }
 
+variable "server_environment_variables" {
+  default     = []
+  description = "A list of environment variable keys and values passed on to the server container. e.g. [{ name = ..., value = ... }]"
+  nullable    = false
+  type        = list(map(string))
+}
+
 variable "server_memory" {
   default     = 2048
   description = "The amount (in MiB) of memory used by the task running the Minecraft server."

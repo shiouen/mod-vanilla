@@ -44,7 +44,7 @@ export def read-variables [path: string] {
     return (open $path)
 }
 
-export def validate-variables-or-exit [variables: list<record>] {
+export def validate-variables-or-exit [variables: record] {
     try { $variables.domain_name } catch {
         print "error: `domain_name` not found, please add it to the config/variables.toml file"
         exit

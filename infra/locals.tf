@@ -1,11 +1,16 @@
 locals {
-  aws_account_id   = data.aws_caller_identity.current.account_id
+  aws_account_id = data.aws_caller_identity.current.account_id
+
+  default_server_environment_variables = [{ name = "EULA", value = "TRUE" }]
+
   ecs_cluster_name = random_id.cluster-name.dec
   ecs_service_name = random_id.service-name.dec
   ecs_volume_name  = "data"
 
   efs_gid = 1000
   efs_uid = 1000
+
+  server_environment_variables = concat(local.default_server_environment_variables, var.server_environment_variables)
 
   minecraft_server_config             = local.minecraft_server_configs_by_edition[var.minecraft_edition]
   minecraft_server_configs_by_edition = {

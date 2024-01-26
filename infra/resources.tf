@@ -35,12 +35,6 @@ resource "aws_ecs_cluster" "cluster" {
 resource "aws_ecs_cluster_capacity_providers" "cluster-capacity-provider" {
   capacity_providers = ["FARGATE", "FARGATE_SPOT"]
   cluster_name       = aws_ecs_cluster.cluster.name
-
-#  default_capacity_provider_strategy {
-#    base              = 1
-#    capacity_provider = "FARGATE"
-#    weight            = 100
-#  }
 }
 
 resource "aws_ecs_service" "service" {
@@ -48,6 +42,8 @@ resource "aws_ecs_service" "service" {
   desired_count   = 0
   name            = local.ecs_service_name
   task_definition = aws_ecs_task_definition.task-definition.arn
+
+  deployment_minimum_healthy_percent = 50
 
   capacity_provider_strategy {
     base              = 1
@@ -65,6 +61,7 @@ resource "aws_ecs_service" "service" {
 resource "aws_ecs_task_definition" "task-definition" {
   container_definitions = jsonencode([
     {
+      environment      = local.server_environment_variables
       essential        = false
       image            = local.minecraft_server_config["image"]
       logConfiguration = var.server_debug ? {
@@ -72,7 +69,7 @@ resource "aws_ecs_task_definition" "task-definition" {
         options   = {
           "awslogs-group"         = aws_cloudwatch_log_group.server-log-group.name
           "awslogs-region"        = var.aws_region
-          "awslogs-stream-prefix" = local.watchdog_server_container_name
+          "awslogs-stream-prefix" = local.minecraft_server_container_name
         }
       } : null
       mountPoints = [
@@ -181,9 +178,9 @@ resource "aws_efs_access_point" "file-system-access-point" {
 resource "aws_efs_file_system" "file-system" {
   encrypted = true
 
-#  lifecycle {
-#    prevent_destroy = true
-#  }
+  #  lifecycle {
+  #    prevent_destroy = true
+  #  }
 
   tags = {
     Name = random_id.file-system-name.dec
