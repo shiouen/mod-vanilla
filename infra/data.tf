@@ -85,12 +85,20 @@ data "aws_iam_policy_document" "query-log-group-policy-document" {
   }
 }
 
+data "aws_iam_policy_document" "server-notifications-policy-document" {
+  statement {
+    actions   = ["sns:Publish"]
+    effect    = "Allow"
+    resources = [aws_sns_topic.server-notifications.arn]
+  }
+}
+
 data "aws_iam_policy_document" "server-notifications-topic-policy-document" {
   statement {
     actions = ["sns:Publish"]
     effect  = "Allow"
 
-    resources = [aws_sns_topic.server-notifications-topic.arn]
+    resources = [aws_sns_topic.server-notifications.arn]
 
     principals {
       identifiers = [aws_iam_role.task-definition-role.arn]

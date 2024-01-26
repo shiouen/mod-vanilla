@@ -219,6 +219,11 @@ resource "aws_iam_policy" "hosted-zone-policy" {
   policy      = data.aws_iam_policy_document.hosted-zone-policy-document.json
 }
 
+resource "aws_iam_policy" "server-notifications-policy" {
+  name_prefix = "mod-server-notifications-policy-"
+  policy      = data.aws_iam_policy_document.server-notifications-policy-document.json
+}
+
 resource "aws_iam_role" "autoscaler-lambda-role" {
   assume_role_policy = data.aws_iam_policy_document.autoscaler-lambda-policy-document.json
   name_prefix        = "mod-${local.subdomain}-"
@@ -254,6 +259,11 @@ resource "aws_iam_role_policy_attachment" "task-definition-role-file-system-poli
 
 resource "aws_iam_role_policy_attachment" "task-definition-role-hosted-zone-policy-attachment" {
   policy_arn = aws_iam_policy.hosted-zone-policy.arn
+  role       = aws_iam_role.task-definition-role.name
+}
+
+resource "aws_iam_role_policy_attachment" "task-definition-role-server-notifications-policy-attachment" {
+  policy_arn = aws_iam_policy.server-notifications-policy.arn
   role       = aws_iam_role.task-definition-role.name
 }
 
@@ -297,7 +307,7 @@ resource "aws_route53_record" "hosted-zone-a-record" {
   records  = ["192.168.1.1"]
   ttl      = 30
   type     = "A"
-  zone_id  = data.aws_route53_zone.root-hosted-zone.zone_id
+  zone_id  = aws_route53_zone.hosted-zone.zone_id
 
   lifecycle {
     ignore_changes = [
@@ -346,13 +356,13 @@ resource "aws_security_group" "service-security-group" {
   vpc_id = module.vpc.vpc_id
 }
 
-resource "aws_sns_topic" "server-notifications-topic" {
+resource "aws_sns_topic" "server-notifications" {
   name_prefix  = "mod-server-notifications-topic-"
   display_name = "MOD Server Notifications"
 }
 
 resource "aws_sns_topic_policy" "server-notifications-topic-policy" {
-  arn    = aws_sns_topic.server-notifications-topic.arn
+  arn    = aws_sns_topic.server-notifications.arn
   policy = data.aws_iam_policy_document.server-notifications-topic-policy-document.json
 }
 
@@ -360,7 +370,7 @@ resource "aws_sns_topic_subscription" "server-notifications-email-subscription" 
   count     = length(var.server_notifications_email_addresses)
   endpoint  = var.server_notifications_email_addresses[count.index]
   protocol  = "email"
-  topic_arn = aws_sns_topic.server-notifications-topic.arn
+  topic_arn = aws_sns_topic.server-notifications.arn
 }
 
 resource "random_id" "autoscaler-lambda-name" {
