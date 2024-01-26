@@ -266,9 +266,11 @@ resource "aws_lambda_function" "autoscaler-lambda" {
   runtime          = "python3.8"
   source_code_hash = data.archive_file.autoscaler-lambda.output_base64sha256
 
-  // TODO add REGION: config.serverRegion, CLUSTER: constants.CLUSTER_NAME, SERVICE: constants.SERVICE_NAME
   environment {
     variables = {
+      CLUSTER = local.ecs_cluster_name
+      REGION  = var.aws_region
+      SERVICE = local.ecs_service_name
     }
   }
 }
@@ -352,6 +354,13 @@ resource "aws_sns_topic" "server-notifications-topic" {
 resource "aws_sns_topic_policy" "server-notifications-topic-policy" {
   arn    = aws_sns_topic.server-notifications-topic.arn
   policy = data.aws_iam_policy_document.server-notifications-topic-policy-document.json
+}
+
+resource "aws_sns_topic_subscription" "server-notifications-email-subscription" {
+  count     = length(var.server_notifications_email_addresses)
+  endpoint  = var.server_notifications_email_addresses[count.index]
+  protocol  = "email"
+  topic_arn = aws_sns_topic.server-notifications-topic.arn
 }
 
 resource "random_id" "autoscaler-lambda-name" {

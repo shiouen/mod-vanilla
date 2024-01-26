@@ -66,6 +66,12 @@ variable "server_startup_time" {
   type        = number
 }
 
+variable "server_notifications_email_addresses" {
+  default     = []
+  description = "Email addresses to send server notifications to."
+  type        = list(string)
+}
+
 variable "subdomain_part" {
   default     = "minecraft"
   description = "The subdomain part."
