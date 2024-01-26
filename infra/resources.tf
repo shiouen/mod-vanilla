@@ -121,23 +121,6 @@ resource "aws_ecs_task_definition" "task-definition" {
     }
   ])
 
-  /*
-
-        environment: {
-          CLUSTER: constants.CLUSTER_NAME,
-          SERVICE: constants.SERVICE_NAME,
-          DNSZONE: hostedZoneId,
-          SERVERNAME: `${config.subdomainPart}.${config.domainName}`,
-          SNSTOPIC: snsTopicArn,
-          TWILIOFROM: config.twilio.phoneFrom,
-          TWILIOTO: config.twilio.phoneTo,
-          TWILIOAID: config.twilio.accountId,
-          TWILIOAUTH: config.twilio.authCode,
-          STARTUPMIN: config.startupMinutes,
-          SHUTDOWNMIN: config.shutdownMinutes,
-        },
-  */
-
   execution_role_arn       = aws_iam_role.task-execution-role.arn
   family                   = random_id.task-definition-family.dec
   cpu                      = var.server_cpu_units
@@ -190,6 +173,12 @@ resource "aws_efs_file_system" "file-system" {
   tags = {
     Name = random_id.file-system-name.dec
   }
+}
+
+resource "aws_efs_mount_target" "file-system-mount-target" {
+  count          = length(module.vpc.isolated_subnet_ids)
+  file_system_id = aws_efs_file_system.file-system.id
+  subnet_id      = module.vpc.isolated_subnet_ids[count.index]
 }
 
 resource "aws_iam_policy" "service-policy" {
