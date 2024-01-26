@@ -227,6 +227,7 @@ resource "aws_iam_role" "autoscaler-lambda-role" {
 
 resource "aws_iam_role" "task-definition-role" {
   assume_role_policy = data.aws_iam_policy_document.task-definition-assume-role-policy-document.json
+  name_prefix        = "mod-task-definition-role-"
 }
 
 resource "aws_iam_role_policy_attachment" "autoscaler-lambda-basic-execution-policy-attachment" {
