@@ -246,6 +246,11 @@ resource "aws_iam_role_policy_attachment" "task-definition-role-cluster-policy-a
   role       = aws_iam_role.task-definition-role.name
 }
 
+resource "aws_iam_role_policy_attachment" "task-definition-role-file-system-policy-attachment" {
+  policy_arn = aws_iam_policy.file-system-policy.arn
+  role       = aws_iam_role.task-definition-role.name
+}
+
 resource "aws_iam_role_policy_attachment" "task-definition-role-hosted-zone-policy-attachment" {
   policy_arn = aws_iam_policy.file-system-policy.arn
   role       = aws_iam_role.task-definition-role.name
