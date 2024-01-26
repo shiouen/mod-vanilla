@@ -343,6 +343,16 @@ resource "aws_security_group" "service-security-group" {
   vpc_id = module.vpc.vpc_id
 }
 
+resource "aws_sns_topic" "server-notifications-topic" {
+  name_prefix  = "mod-server-notifications-"
+  display_name = "MOD Server Notifications"
+}
+
+resource "aws_sns_topic_policy" "server-notifications-topic-policy" {
+  arn    = aws_sns_topic.server-notifications-topic.arn
+  policy = data.aws_iam_policy_document.server-notifications-topic-policy-document.json
+}
+
 resource "random_id" "autoscaler-lambda-name" {
   byte_length = 10
   prefix      = "mod-autoscaler-"

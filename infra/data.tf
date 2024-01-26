@@ -85,6 +85,20 @@ data "aws_iam_policy_document" "query-log-group-policy-document" {
   }
 }
 
+data "aws_iam_policy_document" "server-notifications-topic-policy-document" {
+  statement {
+    actions = ["sns:Publish"]
+    effect  = "Allow"
+
+    resources = [aws_sns_topic.server-notifications-topic.arn]
+
+    principals {
+      identifiers = [aws_iam_role.task-definition-role.arn]
+      type        = "AWS"
+    }
+  }
+}
+
 data "aws_iam_policy_document" "task-definition-assume-role-policy-document" {
   statement {
     actions = ["sts:AssumeRole"]
