@@ -62,6 +62,7 @@ data "aws_iam_policy_document" "hosted-zone-policy-document" {
       "route53:ListResourceRecordSets",
     ]
     effect    = "Allow"
+    //noinspection HILUnresolvedReference
     resources = [aws_route53_zone.hosted-zone.arn]
   }
 }
