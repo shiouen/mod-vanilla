@@ -1,4 +1,5 @@
 locals {
+  aws_account_id   = data.aws_caller_identity.current.account_id
   ecs_cluster_name = random_id.cluster-name.dec
   ecs_service_name = random_id.service-name.dec
   ecs_volume_name  = "data"

@@ -28,7 +28,7 @@ resource "aws_ecs_cluster" "cluster" {
 }
 
 resource "aws_ecs_cluster_capacity_providers" "cluster-capacity-provider" {
-  capacity_providers = ["FARGATE"]
+  capacity_providers = ["FARGATE", "FARGATE_SPOT"]
   cluster_name       = aws_ecs_cluster.cluster.name
 
   default_capacity_provider_strategy {
@@ -204,9 +204,9 @@ resource "aws_efs_file_system" "file-system" {
   }
 }
 
-resource "aws_iam_policy" "cluster-policy" {
-  name_prefix = "mod-cluster-policy-"
-  policy      = data.aws_iam_policy_document.cluster-policy-document.json
+resource "aws_iam_policy" "service-policy" {
+  name_prefix = "mod-service-policy-"
+  policy      = data.aws_iam_policy_document.service-policy-document.json
 }
 
 resource "aws_iam_policy" "file-system-policy" {
@@ -242,13 +242,13 @@ resource "aws_iam_role_policy_attachment" "autoscaler-lambda-basic-execution-pol
 }
 
 resource "aws_iam_role_policy_attachment" "autoscaler-lambda-cluster-policy-attachment" {
-  policy_arn = aws_iam_policy.cluster-policy.arn
+  policy_arn = aws_iam_policy.service-policy.arn
   provider   = aws.us-east-1
   role       = aws_iam_role.autoscaler-lambda-role.name
 }
 
-resource "aws_iam_role_policy_attachment" "task-definition-role-cluster-policy-attachment" {
-  policy_arn = aws_iam_policy.cluster-policy.arn
+resource "aws_iam_role_policy_attachment" "task-definition-role-service-policy-attachment" {
+  policy_arn = aws_iam_policy.service-policy.arn
   role       = aws_iam_role.task-definition-role.name
 }
 
@@ -351,6 +351,13 @@ resource "aws_security_group" "service-security-group" {
     from_port   = local.minecraft_server_config["port"]
     protocol    = local.minecraft_server_config["protocol"]
     to_port     = local.minecraft_server_config["port"]
+  }
+
+  egress {
+    cidr_blocks = ["0.0.0.0/0"]
+    from_port   = 0
+    protocol    = "-1"
+    to_port     = 0
   }
 
   vpc_id = module.vpc.vpc_id

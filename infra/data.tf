@@ -4,6 +4,8 @@ data "archive_file" "autoscaler-lambda" {
   type        = "zip"
 }
 
+data "aws_caller_identity" "current" {}
+
 //noinspection X,MissingProperty
 data "aws_iam_policy" "autoscaler-lambda-basic-execution-policy" {
   name     = "AWSLambdaBasicExecutionRole"
@@ -19,20 +21,6 @@ data "aws_iam_policy_document" "autoscaler-lambda-policy-document" {
       identifiers = ["lambda.amazonaws.com"]
       type        = "Service"
     }
-  }
-}
-
-data "aws_iam_policy_document" "cluster-policy-document" {
-  statement {
-    actions   = ["ecs:*"]
-    effect    = "Allow"
-    resources = ["${aws_ecs_task_definition.task-definition.arn}/*"]
-  }
-
-  statement {
-    actions   = ["ec2:DescribeNetworkInterfaces"]
-    effect    = "Allow"
-    resources = ["*"]
   }
 }
 
@@ -104,6 +92,23 @@ data "aws_iam_policy_document" "server-notifications-topic-policy-document" {
       identifiers = [aws_iam_role.task-definition-role.arn]
       type        = "AWS"
     }
+  }
+}
+
+data "aws_iam_policy_document" "service-policy-document" {
+  statement {
+    actions   = ["ecs:*"]
+    effect    = "Allow"
+    resources = [
+      "arn:aws:ecs:${var.aws_region}:${local.aws_account_id}:service/${aws_ecs_cluster.cluster.name}/${aws_ecs_service.service.name}",
+      "arn:aws:ecs:${var.aws_region}:${local.aws_account_id}:task/${aws_ecs_cluster.cluster.name}/*"
+    ]
+  }
+
+  statement {
+    actions   = ["ec2:DescribeNetworkInterfaces"]
+    effect    = "Allow"
+    resources = ["*"]
   }
 }
 
