@@ -5,7 +5,12 @@ resource "aws_cloudwatch_log_group" "query-log-group" {
 }
 
 resource "aws_cloudwatch_log_group" "server-log-group" {
-  name_prefix       = "mod-server-debug-logs-"
+  name_prefix       = "mod-server-logs-"
+  retention_in_days = 3
+}
+
+resource "aws_cloudwatch_log_group" "watchdog-log-group" {
+  name_prefix       = "mod-watchdog-logs-"
   retention_in_days = 3
 }
 
@@ -97,17 +102,17 @@ resource "aws_ecs_task_definition" "task-definition" {
         { name = "STARTUPMIN", value = tostring(var.server_startup_time) },
         { name = "SHUTDOWNMIN", value = tostring(var.server_shutdown_time) },
         { name = "SNSTOPIC", value = aws_sns_topic.server-notifications.arn },
-        #        TWILIOFROM = config.twilio.phoneFrom,
-        #        TWILIOTO = config.twilio.phoneTo,
-        #        TWILIOAID = config.twilio.accountId,
-        #        TWILIOAUTH = config.twilio.authCode,
+        { name = "TWILIOFROM", value = "" },
+        { name = "TWILIOTO", value = "" },
+        { name = "TWILIOAID", value = "" },
+        { name = "TWILIOAUTH", value = "" },
       ],
       essential        = true
       image            = "doctorray/minecraft-ecsfargate-watchdog"
       logConfiguration = var.server_debug ? {
         logDriver = "awslogs"
         options   = {
-          "awslogs-group"         = aws_cloudwatch_log_group.server-log-group.name
+          "awslogs-group"         = aws_cloudwatch_log_group.watchdog-log-group.name
           "awslogs-region"        = var.aws_region
           "awslogs-stream-prefix" = local.watchdog_server_container_name
         }
