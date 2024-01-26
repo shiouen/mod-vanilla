@@ -36,11 +36,11 @@ resource "aws_ecs_cluster_capacity_providers" "cluster-capacity-provider" {
   capacity_providers = ["FARGATE", "FARGATE_SPOT"]
   cluster_name       = aws_ecs_cluster.cluster.name
 
-  default_capacity_provider_strategy {
-    base              = 1
-    capacity_provider = "FARGATE"
-    weight            = 100
-  }
+#  default_capacity_provider_strategy {
+#    base              = 1
+#    capacity_provider = "FARGATE"
+#    weight            = 100
+#  }
 }
 
 resource "aws_ecs_service" "service" {
@@ -52,7 +52,7 @@ resource "aws_ecs_service" "service" {
   capacity_provider_strategy {
     base              = 1
     capacity_provider = var.fargate_spot_pricing ? "FARGATE_SPOT" : "FARGATE"
-    weight            = 100
+    weight            = 1
   }
 
   network_configuration {
@@ -181,9 +181,9 @@ resource "aws_efs_access_point" "file-system-access-point" {
 resource "aws_efs_file_system" "file-system" {
   encrypted = true
 
-  lifecycle {
-    prevent_destroy = true
-  }
+#  lifecycle {
+#    prevent_destroy = true
+#  }
 
   tags = {
     Name = random_id.file-system-name.dec
