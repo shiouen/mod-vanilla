@@ -252,7 +252,7 @@ resource "aws_iam_role_policy_attachment" "task-definition-role-file-system-poli
 }
 
 resource "aws_iam_role_policy_attachment" "task-definition-role-hosted-zone-policy-attachment" {
-  policy_arn = aws_iam_policy.file-system-policy.arn
+  policy_arn = aws_iam_policy.hosted-zone-policy.arn
   role       = aws_iam_role.task-definition-role.name
 }
 
