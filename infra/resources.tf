@@ -170,9 +170,9 @@ resource "aws_efs_access_point" "file-system-access-point" {
 resource "aws_efs_file_system" "file-system" {
   encrypted = true
 
-  #  lifecycle {
-  #    prevent_destroy = true
-  #  }
+  lifecycle {
+    prevent_destroy = true
+  }
 
   tags = {
     Name = random_id.file-system-name.dec
