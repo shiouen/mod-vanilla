@@ -1,0 +1,16 @@
+domain_name = "mctheboys.com"
+fargate_spot_pricing = true
+minecraft_edition = "java"
+server_cpu_units = 2048
+server_debug = true
+server_memory = 4096
+#server_notifications_email_addresses = ["olivier.va@outlook.com"]
+subdomain_part = "vanilla"
+
+#vpc_id = "vpc-005c9d5033fb525fb"
+
+#vpc_public_subnet_tag_name = "aws-cdk:subnet-type"
+#vpc_public_subnet_tag_value = "Public"
+#
+#vpc_isolated_subnet_tag_name = "aws-cdk:subnet-type"
+#vpc_isolated_subnet_tag_value = "Isolated"
