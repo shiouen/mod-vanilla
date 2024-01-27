@@ -1,3 +1,3 @@
-# Minecraft On-demand Terraform
+# Minecraft On-demand
 
-A Terraform implementation of https://github.com/doctorray117/minecraft-ondemand
+A Terraform implementation of [github.com/doctorray117/minecraft-ondemand](https://github.com/doctorray117/minecraft-ondemand)
