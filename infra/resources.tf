@@ -46,6 +46,7 @@ resource "aws_ecs_service" "service" {
   cluster         = aws_ecs_cluster.cluster.id
   desired_count   = 0
   name            = local.ecs_service_name
+  propagate_tags  = "TASK_DEFINITION"
   task_definition = aws_ecs_task_definition.task-definition.arn
 
   deployment_minimum_healthy_percent = 50
