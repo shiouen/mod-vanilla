@@ -329,7 +329,7 @@ resource "aws_security_group" "file-system-security-group" {
   ingress {
     security_groups = [aws_security_group.service-security-group.id]
     from_port       = 2049
-    protocol        = "TCP"
+    protocol        = "tcp"
     to_port         = 2049
   }
 

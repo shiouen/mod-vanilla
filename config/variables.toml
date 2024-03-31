@@ -1,9 +1,11 @@
 domain_name = "mctheboys.com"
 fargate_spot_pricing = true
 minecraft_edition = "java"
-server_cpu_units = 2048
+#server_cpu_units = 2048
+server_cpu_units = 4096
 server_debug = true
-server_memory = 4096
+#server_memory = 4096
+server_memory = 8192
 #server_notifications_email_addresses = ["olivier.va@outlook.com"]
 subdomain_part = "vanilla"
 
